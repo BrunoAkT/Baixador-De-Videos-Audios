@@ -23,21 +23,29 @@ def download_video():
         return jsonify({'error': 'URL is required'}), 400
 
     try:
+        # Opções base para yt-dlp
+        ydl_opts_base = {
+            'outtmpl': 'downloads/%(title)s.%(ext)s',
+            'cookiefile': 'cookies.txt',
+            'remote_components': 'ejs:github',
+            'compat_opts': {'remote-components': 'ejs:github'}
+        }
+
         if download_type == 'audio':
-            ydl_opts = {
+            ydl_opts = ydl_opts_base.copy()
+            ydl_opts.update({
                 'format': 'bestaudio/best',
                 'postprocessors': [{
                     'key': 'FFmpegExtractAudio',
                     'preferredcodec': 'mp3',
                     'preferredquality': '192',
                 }],
-                'outtmpl': 'downloads/%(title)s.%(ext)s',
-            }
+            })
         else:
-            ydl_opts = {
+            ydl_opts = ydl_opts_base.copy()
+            ydl_opts.update({
                 'format': 'bestvideo*+bestaudio/best',
-                'outtmpl': 'downloads/%(title)s.%(ext)s',
-            }
+            })
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(url, download=True)
